@@ -49,10 +49,13 @@ end
 
 bitmap = font.text_to_bitmap(text)
 
+time = Time.now + 20
+
 puts "Testing speed with scrolling text"
 time = Benchmark.realtime do
 	(0..l*5).each do |i|
 		@matrix.matrix = background.dup
+		print_time_diff(font, time, [0,255,0], [255,0,255], 0, 0)
 		@matrix.scroll(bitmap, [0,255,0], i, 16, 32, 64)
 		@matrix.send
 		sleep 1 / 150.0
