@@ -109,7 +109,7 @@ class	ZmqMatrix
 				value += flame((r+1) % @rows, (c % @columns))
 				value += flame((r+1) % @rows, (c +1) % @columns)
 				value += flame((r+2) % @rows, c % @columns)
-				value *= 32
+				value *= 30
 				value /= 129
 				@fire_buffer[(r*@columns)+c] = value
 			end
