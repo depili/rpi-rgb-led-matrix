@@ -32,7 +32,7 @@ static void InterruptHandler(int signo) {
 }
 
 static FrameCanvas *FillFramebuffer(RGBMatrix *matrix, FrameCanvas *canvas,
-const char *buffer) {
+const char *buffer, int brightness) {
   const int width = matrix->width();
   const int height = matrix->height();
 
@@ -52,12 +52,13 @@ static int usage(const char *progname) {
   progname);
   fprintf(stderr, "Options:\n"
     "\t-r <rows>     : Panel rows. '16' for 16x32 (1:8 multiplexing),\n"
-      "\t                '32' for 32x32 (1:16), '8' for 1:4 multiplexing; 64 for 1:32 multiplexing. "
-        "Default: 32\n"
-          "\t-P <parallel> : For Plus-models or RPi2: parallel chains. 1..3. "
-            "Default: 1\n"
-              "\t-c <chained>  : Daisy-chained boards. Default: 1.\n"
-                "\t-p <port>     : port to listen on. Default: 5555\n");
+    "\t                '32' for 32x32 (1:16), '8' for 1:4 multiplexing; 64 for 1:32 multiplexing. "
+    "Default: 32\n"
+    "\t-P <parallel> : For Plus-models or RPi2: parallel chains. 1..3. "
+    "Default: 1\n"
+    "\t-c <chained>  : Daisy-chained boards. Default: 1.\n"
+    "\t-b <brightnes>: Sets brightness percent. Default: 100.\n"  
+    "\t-p <port>     : port to listen on. Default: 5555\n");
   return 1;
 }
 
@@ -67,6 +68,7 @@ int main(int argc, char *argv[]) {
   int chain = 1;
   int parallel = 1;
   int port = 5555;
+  int brightness = 100;
 
   int opt;
   while ((opt = getopt(argc, argv, "dlD:t:r:P:c:p:b:m:LR:")) != -1) {
@@ -86,6 +88,10 @@ int main(int argc, char *argv[]) {
       case 'p':
       port = atoi(optarg);
       break;
+      
+      case 'b':
+      brightness = atoi(optarg);
+      break;
 
       default: /* '?' */
       return usage(argv[0]);
@@ -100,6 +106,7 @@ int main(int argc, char *argv[]) {
 
   RGBMatrix *matrix = new RGBMatrix(&io, rows, chain, parallel);
   FrameCanvas *swap_buffer = matrix->CreateFrameCanvas();
+  matrix->SetBrightness(brightness)
 
   const uint framebuffer_size = matrix->width() * matrix->height() * 3;
   char *const packet_buffer = new char[framebuffer_size];
@@ -139,7 +146,7 @@ int main(int argc, char *argv[]) {
         continue;
       }
 
-      swap_buffer = FillFramebuffer(matrix, swap_buffer, packet_buffer);
+      swap_buffer = FillFramebuffer(matrix, swap_buffer, packet_buffer, brightness);
     } catch(zmq::error_t e) {
       break;
     }
